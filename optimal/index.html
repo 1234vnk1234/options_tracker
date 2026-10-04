@@ -1,0 +1,157 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="refresh" content="900"></head><body>
+<title>Оптимальні пути BTC і ETH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: position sheet — header, six option cards (entry vs now), then one stacked chart per underlying */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --sunk:#E4E8ED; --ink:#141A22; --muted:#5A6573; --line:#D3D9E0; --accent:#A8640F;
+  --up:#0E7F57; --up-bg:#E2F3EB; --dn:#B83A33; --dn-bg:#F8E5E3;
+  --s1:#2F6FB3; --s2:#A8640F; --s3:#6B4FA8; --s-und:#0E7F57;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif; --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1117; --surface:#151B23; --sunk:#1C232D; --ink:#E5EAF0; --muted:#8C97A6; --line:#29323D; --accent:#E0A146;
+  --up:#43C08F; --up-bg:#123326; --dn:#F0726A; --dn-bg:#3A1B1A; --s1:#5A93D4; --s2:#B97C27; --s3:#9A7FD6; --s-und:#43C08F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1117; --surface:#151B23; --sunk:#1C232D; --ink:#E5EAF0; --muted:#8C97A6; --line:#29323D; --accent:#E0A146;
+  --up:#43C08F; --up-bg:#123326; --dn:#F0726A; --dn-bg:#3A1B1A; --s1:#5A93D4; --s2:#B97C27; --s3:#9A7FD6; --s-und:#43C08F; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);padding-inline:16px;padding-block:24px 48px;margin:0}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(22px,3.2vw,30px)} h2{font-size:18px}
+.eyebrow{font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lead{color:var(--muted);margin:0;max-width:75ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,350px),1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card .nm{font:700 16px/1.2 var(--f-display);display:flex;align-items:center;gap:8px}
+.card .nm i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.pill{font:600 12px/1 var(--f-mono);padding:5px 8px;border-radius:10px;white-space:nowrap}
+.pill.g{background:var(--up-bg);color:var(--up)} .pill.r{background:var(--dn-bg);color:var(--dn)}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
+.kv div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.kv .k{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.kv .v{font:500 15px/1.25 var(--f-mono);font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .dn{color:var(--dn)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:16px;height:0;border-top:2.5px solid}
+.box{position:relative;overflow-x:auto}
+.box svg{display:block;width:100%;min-width:560px;height:auto}
+.box svg text{font:12px var(--f-mono);fill:var(--muted)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font:12.5px/1.5 var(--f-mono);padding:8px 10px;border-radius:6px;white-space:nowrap;z-index:5}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;align-self:flex-start}
+.seg button{font:500 13px var(--f-body);background:var(--surface);color:var(--muted);border:0;padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badges{display:flex;flex-wrap:wrap;gap:8px 10px}
+.badge{display:flex;align-items:center;gap:8px;background:var(--sunk);border-radius:8px;padding:8px 12px;font:500 14px/1.2 var(--f-mono);font-variant-numeric:tabular-nums}
+.badge i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.badge small{font:12px var(--f-body);color:var(--muted)}
+.badge.tot{background:transparent;border:1px solid var(--line)}
+.note{font-size:13px;color:var(--muted);margin:0}
+@media (max-width:520px){.kv{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <span class="eyebrow">options_tracker_optimal · Bybit · дешеві пути · експірації 06.10, 09.10 і 16.10, 11:00 за Києвом</span>
+    <h1>Оптимальні дешеві пути BTC і ETH</h1>
+    <p class="lead">Вибірка путів дешевше 0,5% від ціни активу з найкращим співвідношенням ціни й шансу. Ціни входу — mark на момент запуску трекера. Далі знімок щохвилини до експірації (дані старші за добу показано з кроком 5 хвилин). Прибуток рахую для покупця пута за ціною продажу (bid), виходячи з покупки на <b>$1 000</b> кожного страйку.</p>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div class="cards" id="cards"></div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px"><div class="seg" role="group" aria-label="Масштаб часу"><button type="button" id="z-data" aria-pressed="true">Масштаб: зібрані дані</button><button type="button" id="z-full" aria-pressed="false">До експірації</button></div>
+  <div class="seg" role="group" aria-label="Що показувати"><button type="button" id="m-profit" aria-pressed="true">Профіт, $</button><button type="button" id="m-price" aria-pressed="false">Ціна опціону</button></div></div>
+  <div id="charts" style="display:flex;flex-direction:column;gap:18px"></div>
+  <p class="note">Ціни за 1 BTC або 1 ETH. Пут дорожчає, коли ціна активу падає або зростає волатильність, і щодня втрачає часову вартість. Після своєї експірації кожен пут фіксується на вартості max(0, страйк − ціна поставки Bybit).</p>
+</div>
+
+<script id="data" type="application/json">[{"t": 1791129470265, "legs": {"BTC-6OCT26-84000-P": {"m": 186.19, "b": 180.0, "a": 185.0, "iv": 28.5}, "BTC-9OCT26-82000-P": {"m": 219.85, "b": 210.0, "a": 215.0, "iv": 33.1}, "BTC-16OCT26-80000-P": {"m": 330.35, "b": 340.0, "a": 345.0, "iv": 33.2}, "ETH-6OCT26-2640-P": {"m": 7.72, "b": 7.5, "a": 7.6, "iv": 39.0}, "ETH-9OCT26-2500-P": {"m": 5.02, "b": 5.7, "a": 5.8, "iv": 48.2}, "ETH-16OCT26-2400-P": {"m": 9.89, "b": 10.6, "a": 10.7, "iv": 50.1}}, "BTC": 85320.01, "ETH": 2699.57}]</script>
+<script>
+(function(){
+const ROWS=JSON.parse(document.getElementById('data').textContent);
+const MON={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+const legExp=n=>{const m=n.split('-')[1].match(/(\d+)([A-Z]{3})(\d+)/);return Date.UTC(2000+ +m[3],MON[m[2]],+m[1],8,0);};
+const SER=['--s1','--s2','--s3'];
+const GROUPS=[{u:'BTC',legs:['BTC-6OCT26-84000-P','BTC-9OCT26-82000-P','BTC-16OCT26-80000-P']},{u:'ETH',legs:['ETH-6OCT26-2640-P','ETH-9OCT26-2500-P','ETH-16OCT26-2400-P']}];
+const EXP=Math.max(...GROUPS.flatMap(g=>g.legs).map(legExp));
+const ENTRY=Object.fromEntries(Object.entries(ROWS[0].legs).map(([k,v])=>[k,v.m]));
+const SIZE=1000;const QTY=n=>SIZE/ENTRY[n];const PROF=(n,leg)=>QTY(n)*(leg.b-ENTRY[n]);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const kyiv=t=>{const d=new Date(t+3*36e5);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');};
+const kyivD=t=>{const d=new Date(t+3*36e5);return String(d.getUTCDate()).padStart(2,'0')+'.'+String(d.getUTCMonth()+1).padStart(2,'0')+' '+kyiv(t);};
+const money=(v,u)=>v==null?'—':'$'+v.toLocaleString('uk-UA',{minimumFractionDigits:u==='BTC'?0:2,maximumFractionDigits:u==='BTC'?0:2});
+const pctS=v=>(v>0?'+':'')+v.toFixed(1).replace('.',',')+'%';
+const strike=n=>+n.split('-')[2];
+const expD=n=>{const d=new Date(legExp(n));return String(d.getUTCDate()).padStart(2,'0')+'.'+String(d.getUTCMonth()+1).padStart(2,'0');};
+let last=ROWS[ROWS.length-1];let LIVE=false;
+function meta(){const left=Math.max(0,EXP-last.t),dLeft=Math.floor(left/864e5),hLeft=Math.floor(left%864e5/36e5);
+document.getElementById('meta').innerHTML=`<span>Останнє оновлення: <b>${kyivD(last.t)}</b></span><span>BTC <b>${money(last.BTC,'BTC')}</b></span><span>ETH <b>${money(last.ETH,'ETH')}</b></span><span>До експірації: <b>${dLeft} д ${hLeft} год</b></span><span>Точок: <b>${ROWS.length}</b></span>${LIVE?'<span style="color:var(--up)">● наживо з Bybit, щохвилини</span>':''}`;}
+function cards(){let h='';GROUPS.forEach(g=>g.legs.forEach((n,i)=>{const e=ENTRY[n],L=last.legs[n];const pl=L.b-e,plp=(L.b/e-1)*100;const k=strike(n),u=last[g.u];
+ let peak={v:-1,t:0};ROWS.forEach(r=>{const x=r.legs[n];if(x&&x.b>peak.v)peak={v:x.b,t:r.t};});
+ const dist=(u/k-1)*100;
+ h+=`<article class="card"><div class="top"><span class="nm"><i style="background:${css(SER[i])}"></i>${g.u} пут ${k.toLocaleString('uk-UA')} · ${expD(n)}</span><span class="pill ${pl>=0?'g':'r'}">${pctS(plp)}</span></div>
+ <div class="kv"><div><span class="k">Вхід (mark)</span><span class="v">${money(e,g.u)}</span></div><div><span class="k">Зараз mark / bid</span><span class="v">${money(L.m,g.u)} / ${money(L.b,g.u)}</span></div><div><span class="k">Профіт за bid</span><span class="v ${pl>=0?'up':'dn'}">${pl>=0?'+':'−'}${money(Math.abs(pl),g.u)}</span></div>
+ <div><span class="k">Пік за bid</span><span class="v">${pctS((peak.v/e-1)*100)}</span></div><div><span class="k">${g.u} до страйку</span><span class="v">${dist>0?'−':'+'}${Math.abs(dist).toFixed(1).replace('.',',')}%</span></div><div><span class="k">IV</span><span class="v">${L.iv??'—'}%</span></div><div><span class="k">До експірації</span><span class="v">${legExp(n)<=last.t?(L.settle?'розрахов. '+money(L.settle,g.u):'завершився'):(((legExp(n)-last.t)/864e5).toFixed(1).replace('.',',')+' д')}</span></div><div><span class="k">Контрактів на $1 000</span><span class="v">${QTY(n).toFixed(g.u==='BTC'?3:2).replace('.',',')} ${g.u}</span></div><div><span class="k">Профіт на $1 000</span><span class="v ${pl>=0?'up':'dn'}">${PROF(n,L)>=0?'+':'−'}$${Math.abs(PROF(n,L)).toFixed(2).replace('.',',')}</span></div><div><span class="k">${g.u} зараз</span><span class="v">${money(u,g.u)}</span></div></div></article>`;}));
+ document.getElementById('cards').innerHTML=h;}
+let ZOOM='data';try{ZOOM=localStorage.getItem('opt-zoom')||'data';}catch(e){}
+let MODE='profit';try{MODE=localStorage.getItem('opt-mode')||'profit';}catch(e){}
+function chart(g){const pts=ROWS.filter(r=>g.legs.every(n=>r.legs[n]&&r.legs[n].m!=null));const W=1000,H=400,Lm=70,R=84,T=28,B=34,pw=W-Lm-R,ph=H-T-B;
+ const t0=pts[0].t,lastT=pts[pts.length-1].t;const t1=ZOOM==='full'?EXP:Math.min(EXP,Math.max(lastT+(lastT-t0)*0.15+30*60e3,t0+3*36e5));
+ const val=(p,n)=>MODE==='profit'?PROF(n,p.legs[n]):p.legs[n].m;
+ const vals=pts.flatMap(p=>g.legs.map(n=>val(p,n)));let lo,hi;
+ if(MODE==='profit'){lo=Math.min(0,...vals);hi=Math.max(0,...vals);const pad=Math.max((hi-lo)*0.12,25);lo-=pad;hi+=pad;}else{lo=0;hi=Math.max(...vals,...g.legs.map(n=>ENTRY[n]))*1.12;}
+ const x=t=>Lm+(t-t0)/(t1-t0)*pw,y=v=>T+ph-(v-lo)/(hi-lo)*ph;
+ const us=pts.map(p=>p[g.u]).filter(v=>v!=null).concat(g.legs.map(strike));let uLo=Math.min(...us),uHi=Math.max(...us);const up=(uHi-uLo)*0.12||uHi*0.003;uLo-=up;uHi+=up;const yu=v=>T+ph-(v-uLo)/(uHi-uLo)*ph;
+ const cu=css('--s-und'),ln=css('--line'),mu=css('--muted'),ink=css('--ink');
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${MODE==='profit'?'Профіт':'Ціни'} путів ${g.u} і ціна ${g.u}">`;
+ const nice=r=>{const m=Math.pow(10,Math.floor(Math.log10(r)));return [1,2,2.5,5,10].find(k=>k*m>=r)*m;};
+ const st=nice((hi-lo)/6);for(let v=Math.ceil(lo/st)*st;v<=hi;v+=st){const z=Math.abs(v)<st/1000;s+=`<line x1="${Lm}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${z&&MODE==='profit'?mu:ln}" ${z?'':'stroke-dasharray="2 4"'}/><text x="${Lm-8}" y="${y(v)+4}" text-anchor="end">${MODE==='profit'?(v>0?'+':v<0?'−':'')+'$'+Math.abs(Math.round(v)).toLocaleString('uk-UA'):'$'+v.toLocaleString('uk-UA')}</text>`;}
+ const ust=nice((uHi-uLo)/5);for(let v=Math.ceil(uLo/ust)*ust;v<=uHi;v+=ust)s+=`<text x="${W-R+8}" y="${yu(v)+4}" style="fill:${cu}">${v.toLocaleString('uk-UA')}</text>`;
+ s+=`<text x="${Lm-8}" y="${T-10}" text-anchor="end">${MODE==='profit'?'профіт, $':'пут, $'}</text><text x="${W-R+8}" y="${T-10}" style="fill:${cu}">${g.u}, $</text>`;
+ const span=t1-t0,tick=[15,30,60,120,180,360,720,1440].map(m=>m*6e4).find(v=>span/v<=8)||2*864e5;
+ for(let h=Math.ceil(t0/tick)*tick;h<=t1;h+=tick)s+=`<text x="${x(h)}" y="${H-10}" text-anchor="middle">${span>2*864e5?kyivD(h).slice(0,5)+(tick<864e5?' '+kyiv(h):''):kyiv(h)}</text>`;
+ g.legs.forEach((n,i)=>{const e=legExp(n);if(e>=t0&&e<=t1)s+=`<line x1="${x(e)}" x2="${x(e)}" y1="${T}" y2="${T+ph}" stroke="${css(SER[i])}" stroke-dasharray="3 3"/><text x="${x(e)-5}" y="${T+12+i*14}" text-anchor="end" style="fill:${css(SER[i])}">експ. ${expD(n)}</text>`;});
+ g.legs.forEach((n,i)=>{const k=strike(n);s+=`<line x1="${Lm}" x2="${W-R}" y1="${yu(k)}" y2="${yu(k)}" stroke="${css(SER[i])}" stroke-opacity=".5" stroke-dasharray="1 4"/><text x="${Lm+6}" y="${yu(k)-5}" style="fill:${css(SER[i])}">страйк ${k.toLocaleString('uk-UA')}</text>`;});
+ s+=`<path d="${pts.map((p,i)=>(i?'L':'M')+x(p.t).toFixed(1)+' '+yu(p[g.u]).toFixed(1)).join(' ')}" fill="none" stroke="${cu}" stroke-width="2"/>`;
+ g.legs.forEach((n,i)=>{const col=css(SER[i]);s+=`<path d="${pts.map((p,j)=>(j?'L':'M')+x(p.t).toFixed(1)+' '+y(val(p,n)).toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="2.2"/>`;
+  if(pts.length<400)pts.forEach(p=>s+=`<circle cx="${x(p.t)}" cy="${y(val(p,n))}" r="${pts.length>150?1.6:2.4}" fill="${col}"/>`);
+  if(MODE==='price')s+=`<line x1="${Lm}" x2="${W-R}" y1="${y(ENTRY[n])}" y2="${y(ENTRY[n])}" stroke="${col}" stroke-opacity=".5" stroke-dasharray="6 4"/>`;
+  const e=pts[pts.length-1];s+=`<circle cx="${x(e.t)}" cy="${y(val(e,n))}" r="4.5" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`;});
+ s+=`<line class="xh" x1="0" x2="0" y1="${T}" y2="${T+ph}" stroke="${mu}" visibility="hidden"/><rect class="hit" x="${Lm}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/></svg><div class="tip" hidden></div>`;
+ const L=pts[pts.length-1];let tot=0;const badges=g.legs.map((n,i)=>{const pr=PROF(n,L.legs[n]);tot+=pr;return `<span class="badge"><i style="background:${css(SER[i])}"></i><small>пут ${strike(n).toLocaleString('uk-UA')} · ${expD(n)}</small><span class="${pr>=0?'up':'dn'}">${pr>=0?'+':'−'}$${Math.abs(pr).toFixed(2).replace('.',',')}</span><small>${pctS(pr/SIZE*100)}</small></span>`;}).join('');
+ const badgeTot=`<span class="badge tot"><small>Разом на $${(SIZE*g.legs.length).toLocaleString('uk-UA')}</small><span class="${tot>=0?'up':'dn'}">${tot>=0?'+':'−'}$${Math.abs(tot).toFixed(2).replace('.',',')}</span></span><span class="badge tot"><small>${g.u} зараз</small><span style="color:${cu}">${money(L[g.u],g.u)}</span><small>вхід ${money(ROWS[0][g.u],g.u)}</small></span>`;
+ const box=document.createElement('section');box.className='panel';
+ box.innerHTML=`<h2>Пути ${g.u}</h2><div class="badges">${badges}${badgeTot}</div><div class="legend">${g.legs.map((n,i)=>`<span><i style="border-color:${css(SER[i])}"></i>пут ${strike(n).toLocaleString('uk-UA')} · ${expD(n)}</span>`).join('')}<span><i style="border-color:${cu}"></i>ціна ${g.u} (права шкала)</span><span><i style="border-color:${mu};border-top-style:dotted"></i>страйки</span>${MODE==='profit'?`<span><i style="border-color:${mu}"></i>нуль (беззбиток)</span>`:`<span><i style="border-color:${mu};border-top-style:dashed"></i>ціна входу</span>`}</div><div class="box">${s}</div>`;
+ document.getElementById('charts').appendChild(box);
+ const svg=box.querySelector('svg'),tip=box.querySelector('.tip'),xh=svg.querySelector('.xh'),wrap=box.querySelector('.box');
+ svg.querySelector('.hit').addEventListener('mousemove',ev=>{const b=svg.getBoundingClientRect();const tt=t0+((ev.clientX-b.left)*W/b.width-Lm)/pw*(t1-t0);let p=pts[0];for(const q of pts)if(Math.abs(q.t-tt)<Math.abs(p.t-tt))p=q;
+  xh.setAttribute('x1',x(p.t));xh.setAttribute('x2',x(p.t));xh.setAttribute('visibility','visible');
+  tip.innerHTML=`${kyivD(p.t)} · ${g.u} ${money(p[g.u],g.u)}<br>`+g.legs.map(n=>{const pr=PROF(n,p.legs[n]);return `пут ${strike(n).toLocaleString('uk-UA')}: ${money(p.legs[n].m,g.u)} · <b>${pr>=0?'+':'−'}$${Math.abs(pr).toFixed(2)}</b>`;}).join('<br>');
+  tip.hidden=false;tip.style.left=Math.min(wrap.clientWidth-270,x(p.t)*b.width/W+12+wrap.scrollLeft)+'px';tip.style.top='10px';});
+ svg.addEventListener('mouseleave',()=>{tip.hidden=true;xh.setAttribute('visibility','hidden');});}
+function render(){meta();cards();document.getElementById('charts').innerHTML='';GROUPS.forEach(chart);}
+function setZoom(z){ZOOM=z;try{localStorage.setItem('opt-zoom',z);}catch(e){}document.getElementById('z-data').setAttribute('aria-pressed',z==='data');document.getElementById('z-full').setAttribute('aria-pressed',z==='full');render();}
+document.getElementById('z-data').addEventListener('click',()=>setZoom('data'));document.getElementById('z-full').addEventListener('click',()=>setZoom('full'));
+function setMode(m){MODE=m;try{localStorage.setItem('opt-mode',m);}catch(e){}document.getElementById('m-profit').setAttribute('aria-pressed',m==='profit');document.getElementById('m-price').setAttribute('aria-pressed',m==='price');render();}
+document.getElementById('m-profit').addEventListener('click',()=>setMode('profit'));document.getElementById('m-price').addEventListener('click',()=>setMode('price'));
+document.getElementById('m-profit').setAttribute('aria-pressed',MODE==='profit');document.getElementById('m-price').setAttribute('aria-pressed',MODE==='price');
+/* live updates straight from Bybit in the viewer's browser (works on the public site; silently skipped where blocked) */
+const ALL=GROUPS.flatMap(g=>g.legs);
+async function live(){if(Date.now()>EXP)return;try{const r={t:Date.now(),legs:{}};for(const n of ALL){if(Date.now()>=legExp(n)){if(last.legs[n])r.legs[n]=last.legs[n];continue;}const j=await (await fetch('https://api.bybit.com/v5/market/tickers?category=option&symbol='+n+'-USDT')).json();const x=j.result.list[0];r[n.slice(0,3)]=+x.indexPrice;r.legs[n]={m:+(+x.markPrice).toFixed(2),b:+(+x.bid1Price||0).toFixed(2),a:+(+x.ask1Price||0).toFixed(2),iv:+(x.markIv*100).toFixed(1)};}
+for(const g of GROUPS)if(r[g.u]==null)r[g.u]=last[g.u];
+ if(r.t-last.t>20e3){ROWS.push(r);last=r;}LIVE=true;render();}catch(e){}}
+if(location.protocol.startsWith('http')&&!/claude\.ai|claudeusercontent/.test(location.hostname)){live();setInterval(live,60e3);}
+setZoom(ZOOM);try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});}catch(e){}
+})();
+</script>
+
+</body></html>
